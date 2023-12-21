@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023. Etienne Collin #2038029,
+ * Copyright (c) 2023. Etienne Collin #2038029, Emiliano Aviles #20178127
  */
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.CoreDocument;
@@ -80,5 +80,15 @@ public class Preprocessor {
         // Annotate the document
         this.pipeline.annotate(document);
         return document;
+    }
+
+    public CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>> createFileMap(ArrayList<String> processedFiles) {
+        // TODO: implement
+        return null;
+    }
+
+    public CustomHashMap<String, ArrayList<String>> createWordMap(ArrayList<String> processedFiles) {
+        // TODO: implement
+        return null;
     }
 }

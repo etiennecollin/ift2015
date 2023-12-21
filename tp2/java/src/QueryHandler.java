@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023. Etienne Collin #2038029,
+ * Copyright (c) 2023. Etienne Collin #2038029, Emiliano Aviles #20178127
  */
 import java.io.*;
 import java.util.ArrayList;
@@ -11,10 +11,11 @@ public class QueryHandler {
         this.queries = new ArrayList<>();
     }
 
-    public void processQueries(String outputPath) {
+    public void processQueries(String outputPath, CustomHashMap<String, ArrayList<String>> wordMap, CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>> fileMap) {
         try (PrintWriter printWriter = new PrintWriter(new BufferedWriter(new FileWriter(outputPath, true)))) {
             for (String query : queries) {
-                // TODO: implement
+                // TODO: use wordMap and fileMap to get the query result using getTFIDF() and getBigram()
+
                 printWriter.println(query);
             }
         } catch (IOException e) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023. Etienne Collin #2038029,
+ * Copyright (c) 2023. Etienne Collin #2038029, Emiliano Aviles #20178127
  */
 import java.util.AbstractMap;
 import java.util.HashMap;
