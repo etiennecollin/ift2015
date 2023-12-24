@@ -24,6 +24,9 @@ public class Utils {
                 if (fileIndex != -1) {
                     String text = processedFiles.get(fileIndex);
                     String[] words = text.split("\\s+");
+
+                    // TODO: enlever forloop ici
+
                     for (int i = 0; i < words.length - 1; i++) {
                         if (word.equals(words[i])) {
                             totalOccurrences++;
