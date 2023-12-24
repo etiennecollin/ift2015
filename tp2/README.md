@@ -4,7 +4,7 @@ _By Etienne Collin & Emiliano Aviles_
 
 ## How to setup
 
-Please note that the stanford-corenlp-4.5.1 library should be placed in the
+Please note that the [stanford-corenlp-4.5.1 library](https://downloads.cs.stanford.edu/nlp/software/stanford-corenlp-4.5.1.zip) should be placed in the
 `lib` directory of this project. This means that the structure of the project
 should be as follows:
 
