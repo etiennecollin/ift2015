@@ -53,6 +53,6 @@ public class CustomHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> 
 
     @Override
     public Set<Entry<K, V>> entrySet() {
-        return null;
+        return hashMap.entrySet();
     }
 }

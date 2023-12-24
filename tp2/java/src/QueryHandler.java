@@ -11,7 +11,7 @@ public class QueryHandler {
         this.queries = new ArrayList<>();
     }
 
-    public void processQueries(String outputPath, CustomHashMap<String, ArrayList<String>> wordMap, CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>> fileMap) {
+    public void processQueries(String outputPath, CustomHashMap<String, CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>>> wordMap) {
         try (PrintWriter printWriter = new PrintWriter(new BufferedWriter(new FileWriter(outputPath, true)))) {
             for (String query : queries) {
                 // TODO: use wordMap and fileMap to get the query result using getTFIDF() and getBigram()

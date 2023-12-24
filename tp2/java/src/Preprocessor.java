@@ -11,10 +11,15 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 public class Preprocessor {
     private final StanfordCoreNLP pipeline;
+    private final CustomHashMap<String, CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>>> wordMap = new CustomHashMap<>();
+    private final WordTokenizer tokenizer = new WordTokenizer();
+    private final ArrayList<String> fileNames = new ArrayList<>(); // List of file names
 
     public Preprocessor() {
         // Set up pipeline properties
@@ -41,6 +46,7 @@ public class Preprocessor {
         ArrayList<String> processedFiles = new ArrayList<>(files.length);
         for (File file : files) {
             processedFiles.add(processFile(file));
+            this.fileNames.add(file.getName()); // Add the file name to the fileNames list
         }
         return processedFiles;
     }
@@ -82,13 +88,61 @@ public class Preprocessor {
         return document;
     }
 
-    public CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>> createFileMap(ArrayList<String> processedFiles) {
-        // TODO: implement
-        return null;
+    public CustomHashMap<String, CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>>> getWordMap(){
+        return this.wordMap;
     }
 
-    public CustomHashMap<String, ArrayList<String>> createWordMap(ArrayList<String> processedFiles) {
-        // TODO: implement
-        return null;
+    // TODO: Explain how we add words to wordMap, into adding the stuff into fileMap afterwards
+
+    public void addWord(String word, ArrayList<String> fileNames, ArrayList<ArrayList<Integer>> positions) {
+        if (!wordMap.containsKey(word)) {
+            wordMap.put(word, new CustomHashMap<>());
+        }
+
+        CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>> fileMap = wordMap.get(word);
+        fileMap.put(fileNames, positions);
+    }
+    public CustomHashMap<String, CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>>> createWordMap(ArrayList<String> processedFiles) {
+
+        // Iterate through each file
+        for (int i = 0; i < processedFiles.size(); i++) {
+            String text = processedFiles.get(i);
+            String fileName = fileNames.get(i);
+
+            Map<String, ArrayList<Integer>> tokenized = tokenizer.tokenize(text);
+            for (Map.Entry<String, ArrayList<Integer>> entry : tokenized.entrySet()) {
+                String word = entry.getKey();
+                ArrayList<Integer> positions = entry.getValue();
+
+                if (!positions.isEmpty()) {
+                    CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>> fileMap = this.getWordMap().get(word);
+                    if (fileMap == null) {
+                        fileMap = new CustomHashMap<>();
+
+                        ArrayList<String> fileNamesList = new ArrayList<>();
+                        fileNamesList.add(fileName);
+
+                        ArrayList<ArrayList<Integer>> positionList = new ArrayList<>();
+                        positionList.add(positions);
+
+                        fileMap.put(fileNamesList, positionList);
+                        this.getWordMap().put(word, fileMap);
+
+                    } else {
+                        for (Map.Entry<ArrayList<String>, ArrayList<ArrayList<Integer>>> fileEntry : fileMap.entrySet()) {
+                            ArrayList<String> existingFileNames = fileEntry.getKey();
+                            ArrayList<ArrayList<Integer>> existingPositions = fileEntry.getValue();
+
+                            if (!existingFileNames.contains(fileName)) {
+                                existingFileNames.add(fileName);
+                                existingPositions.add(positions);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return wordMap;
     }
 }
