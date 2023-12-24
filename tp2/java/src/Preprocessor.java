@@ -14,12 +14,32 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * The Preprocessor class is responsible for processing a directory of text files,
+ * extracting lemmatized words from each file, and creating a WordMap that associates
+ * each word with a FileMap containing file names and positions.
+ */
 public class Preprocessor {
+    /**
+     * StanfordCoreNLP pipeline for natural language processing.
+     */
     private final StanfordCoreNLP pipeline;
+    /**
+     * List of file names processed by the preprocessor.
+     */
     private final ArrayList<String> fileNames = new ArrayList<>(); // List of file names
+    /**
+     * WordMap associating each word with a FileMap containing file names and positions.
+     */
     private WordMap wordMap = new WordMap();
+    /**
+     * List of processed files containing lemmatized and cleaned content.
+     */
     private ArrayList<String> processedFiles;
 
+    /**
+     * Constructs a Preprocessor with the necessary setup for natural language processing.
+     */
     public Preprocessor() {
         // Set up pipeline properties
         Properties properties = new Properties();
@@ -34,6 +54,12 @@ public class Preprocessor {
         this.pipeline = new StanfordCoreNLP(properties);
     }
 
+    /**
+     * Processes all text files in the specified directory, extracting lemmatized words,
+     * and creating a WordMap associating each word with a FileMap containing file names and positions.
+     *
+     * @param dir the directory path containing text files to be processed
+     */
     public void processDirectory(String dir) {
         File folder = new File(dir);
         File[] files = folder.listFiles();
@@ -52,6 +78,15 @@ public class Preprocessor {
         createWordMap();
     }
 
+    /**
+     * Processes a single text file, extracting lemmatized words and returning the cleaned content.
+     *
+     * @param file the text file to be processed
+     *
+     * @return the cleaned and lemmatized content of the file
+     *
+     * @throws RuntimeException if the file is not valid or if there is an issue reading the file
+     */
     public String processFile(File file) {
         if (!file.isFile()) {
             throw new RuntimeException("Invalid file");
@@ -79,6 +114,71 @@ public class Preprocessor {
         }
     }
 
+    /**
+     * Creates a WordMap associating each word with a FileMap containing file names and positions.
+     */
+    private void createWordMap() {
+        this.wordMap = new WordMap();
+
+        // Iterate through each file
+        for (int i = 0; i < processedFiles.size(); i++) {
+            String fileContent = processedFiles.get(i);
+            String fileName = fileNames.get(i);
+
+            // Get the list of positions for every word of the processed file
+            CustomHashMap<String, ArrayList<Integer>> positionalizedFileContent = Utils.positionalize(fileContent);
+
+            // Add relevant positions to the wordMap
+            for (Map.Entry<String, ArrayList<Integer>> entry : positionalizedFileContent.entrySet()) {
+                String word = entry.getKey();
+                ArrayList<Integer> positions = entry.getValue();
+
+                if (positions.isEmpty()) {
+                    continue;
+                }
+
+                // Try to get the fileMap associated to the word in question
+                FileMap fileMap = this.wordMap.get(word);
+
+                // If the word has not been encountered yet, create a new fileMap
+                if (fileMap == null) {
+                    fileMap = new FileMap();
+
+                    // Update the key of th fileMap with the new file name
+                    ArrayList<String> fileNamesList = new ArrayList<>();
+                    fileNamesList.add(fileName);
+
+                    // Update the value of the fileMap with the new list of positions
+                    ArrayList<ArrayList<Integer>> positionList = new ArrayList<>();
+                    positionList.add(positions);
+
+                    // Update the wordMap with the new fileMap
+                    fileMap.put(fileNamesList, positionList);
+                    this.wordMap.put(word, fileMap);
+                } else {
+                    // Update the existing fileMap with the new file name and the new list of positions
+                    for (Map.Entry<ArrayList<String>, ArrayList<ArrayList<Integer>>> fileEntry : fileMap.entrySet()) {
+                        ArrayList<String> existingFileNames = fileEntry.getKey();
+                        ArrayList<ArrayList<Integer>> existingPositions = fileEntry.getValue();
+
+                        if (!existingFileNames.contains(fileName)) {
+                            existingFileNames.add(fileName);
+                            existingPositions.add(positions);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Performs natural language processing on a given line of text, returning a CoreDocument.
+     *
+     * @param line the input line of text to be processed
+     *
+     * @return the CoreDocument obtained after natural language processing
+     */
     private CoreDocument getCoreDocument(String line) {
         String formattedLine = line.replaceAll("[^’'a-zA-Z0-9]", " ").replaceAll("\\s+", " ").trim();
 
@@ -89,70 +189,30 @@ public class Preprocessor {
         return document;
     }
 
+    /**
+     * Retrieves the WordMap created during the preprocessing.
+     *
+     * @return the WordMap associating each word with a FileMap containing file names and positions
+     */
     public WordMap getWordMap() {
         return wordMap;
     }
 
+    /**
+     * Retrieves the list of processed files.
+     *
+     * @return the list of processed files containing cleaned and lemmatized content
+     */
     public ArrayList<String> getProcessedFiles() {
         return processedFiles;
     }
 
+    /**
+     * Retrieves the list of file names processed during preprocessing.
+     *
+     * @return the list of file names corresponding to the processed files
+     */
     public ArrayList<String> getFileNames() {
         return fileNames;
-    }
-
-    private void createWordMap() {
-        this.wordMap = new WordMap();
-
-        // Iterate through each file
-        for (int i = 0; i < processedFiles.size(); i++) {
-            String fileContent = processedFiles.get(i);
-            String fileName = fileNames.get(i);
-
-            // We use the Utils.positionalize method in order to get the list of positions for every word contained
-            // in a certain text file. We will be adding the positions that are interesting to us to FileMap.
-
-            CustomHashMap<String, ArrayList<Integer>> positionalizedFileContent = Utils.positionalize(fileContent);
-
-            for (Map.Entry<String, ArrayList<Integer>> entry : positionalizedFileContent.entrySet()) {
-                String word = entry.getKey();
-                ArrayList<Integer> positions = entry.getValue();
-
-                // Create WordMap and FileMap if the word we encountered in a specific text file hasn't been stored yet
-
-                if (!positions.isEmpty()) {
-                    FileMap fileMap = this.wordMap.get(word);
-                    if (fileMap == null) {
-                        fileMap = new FileMap();
-
-                        ArrayList<String> fileNamesList = new ArrayList<>();
-                        fileNamesList.add(fileName);
-
-                        ArrayList<ArrayList<Integer>> positionList = new ArrayList<>();
-                        positionList.add(positions);
-
-                        fileMap.put(fileNamesList, positionList);
-                        this.wordMap.put(word, fileMap);
-                    } else {
-
-                        // Update WordMap and FileMap if the word encountered in a specific text file
-                        // has already been stored from another text file. Update the key and value from the instance
-                        // of fileMap associated to the word in question, corresponding to the list of texts containing
-                        // the specific word, and the list of positions respectively.
-
-                        for (Map.Entry<ArrayList<String>, ArrayList<ArrayList<Integer>>> fileEntry : fileMap.entrySet()) {
-                            ArrayList<String> existingFileNames = fileEntry.getKey();
-                            ArrayList<ArrayList<Integer>> existingPositions = fileEntry.getValue();
-
-                            if (!existingFileNames.contains(fileName)) {
-                                existingFileNames.add(fileName);
-                                existingPositions.add(positions);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 }

@@ -4,13 +4,30 @@
 import java.io.*;
 import java.util.ArrayList;
 
+/**
+ * The QueryHandler class is responsible for processing queries based on a given WordMap and
+ * the results of the preprocessing of text files.
+ */
 public class QueryHandler {
-    private static final String BIGRAM_QUERY = "the most probable bigram of";
-    private static final String SEARCH_QUERY = "search";
+    /**
+     * List of queries to be processed.
+     */
     private final ArrayList<String> queries;
+    /**
+     * Path to the file containing queries.
+     */
     private final String queriesPath;
+    /**
+     * Output path for storing the results of query processing.
+     */
     private final String outputPath;
 
+    /**
+     * Constructs a QueryHandler with the specified paths for queries and output.
+     *
+     * @param queriesPath the path to the file containing queries
+     * @param outputPath  the output path for storing the results of query processing
+     */
     public QueryHandler(String queriesPath, String outputPath) {
         this.queriesPath = queriesPath;
         this.outputPath = outputPath;
@@ -26,25 +43,31 @@ public class QueryHandler {
         }
     }
 
+    /**
+     * Processes the queries based on the provided WordMap and the results of preprocessing.
+     *
+     * @param wordMap        the WordMap containing word associations with FileMaps
+     * @param processedFiles the list of processed files containing cleaned and lemmatized content
+     * @param fileNames      the list of file names corresponding to the processed files
+     */
     public void processQueries(WordMap wordMap, ArrayList<String> processedFiles, ArrayList<String> fileNames) {
         try (PrintWriter printWriter = new PrintWriter(new BufferedWriter(new FileWriter(outputPath, false)))) {
             // Iterate over the queries
             for (String query : queries) {
                 // Check what type of query it is and process it accordingly
                 QueryType queryType;
-                if (query.contains(BIGRAM_QUERY)) {
-                    query = query.replace(BIGRAM_QUERY + " ", "");
+                if (query.contains(QueryType.BIGRAM.getQueryPrefix())) {
+                    query = query.replace(QueryType.BIGRAM.getQueryPrefix(), "");
                     queryType = QueryType.BIGRAM;
-                } else if (query.contains(SEARCH_QUERY)) {
-                    query = query.replace(SEARCH_QUERY + " ", "");
-                    String[] queryWords = query.split("\\s+");
+                } else if (query.contains(QueryType.SEARCH.getQueryPrefix())) {
+                    query = query.replace(QueryType.SEARCH.getQueryPrefix(), "");
                     queryType = QueryType.SEARCH;
                 } else {
-                    throw new RuntimeException("Invalid query: " + query);
+                    throw new RuntimeException("Invalid query format: " + query);
                 }
 
                 // Split the query words
-                String[] queryWords = query.split("\\s+");
+                String[] queryWords = query.split("\\W+");
 
                 // Process each query word
                 for (String word : queryWords) {
@@ -75,12 +98,20 @@ public class QueryHandler {
         }
     }
 
+    /**
+     * Corrects the given word by finding the closest match in the list of processed files.
+     *
+     * @param word           the word to be corrected
+     * @param processedFiles the list of processed files containing cleaned and lemmatized content
+     *
+     * @return the corrected word based on the closest match
+     */
     public String correctWord(String word, ArrayList<String> processedFiles) {
         String correctedWord = word;
         int minDistance = Integer.MAX_VALUE;
 
         for (String processedFile : processedFiles) {
-            String[] processedFileWords = processedFile.split("\\s+");
+            String[] processedFileWords = processedFile.split("\\W+");
 
             for (String processedFileWord : processedFileWords) {
                 int distance = Utils.editDistance(word, processedFileWord);

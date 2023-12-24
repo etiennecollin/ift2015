@@ -3,11 +3,31 @@
  */
 import java.util.ArrayList;
 
+/**
+ * The Main class serves as the entry point for the application.
+ * It demonstrates the usage of the Preprocessor and QueryHandler classes
+ * to preprocess a dataset and handle queries based on the processed data.
+ */
 public class Main {
+    /**
+     * Directory path for the dataset.
+     */
     private static final String DATASET_DIR = "dataset";
+    /**
+     * Name of the query file.
+     */
     private static final String QUERY_FILE = "query.txt";
+    /**
+     * Name of the solution file.
+     */
     private static final String SOLUTION_FILE = "solution.txt";
 
+    /**
+     * The main method that initiates the preprocessing of the dataset
+     * and handles queries based on the processed data.
+     *
+     * @param args command-line arguments (not used in this context)
+     */
     public static void main(String[] args) {
         // Preprocess the dataset
         Preprocessor preprocessor = new Preprocessor();
