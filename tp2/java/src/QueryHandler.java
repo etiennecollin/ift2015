@@ -2,6 +2,7 @@
  * Copyright (c) 2023. Etienne Collin #2038029, Emiliano Aviles #20178127
  */
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class QueryHandler {
@@ -11,12 +12,14 @@ public class QueryHandler {
         this.queries = new ArrayList<>();
     }
 
-    public void processQueries(String outputPath, CustomHashMap<String, CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>>> wordMap) {
+    public void processQueries(String outputPath, CustomHashMap<String, CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>>> wordMap,
+                               ArrayList<String> processedFiles, ArrayList<String> fileNames) {
+        Utils utils = new Utils();
+
         try (PrintWriter printWriter = new PrintWriter(new BufferedWriter(new FileWriter(outputPath, true)))) {
             for (String query : queries) {
-                // TODO: use wordMap and fileMap to get the query result using getTFIDF() and getBigram()
-
-                printWriter.println(query);
+                //TODO: changer pour un bon traitement de queries, mais getBigram fonctionne
+                printWriter.println(Utils.getBigram(wordMap, processedFiles, fileNames, query));
             }
         } catch (IOException e) {
             throw new RuntimeException("Invalid file output path");

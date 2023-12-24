@@ -135,4 +135,8 @@ public class Preprocessor {
         }
         return wordMap;
     }
+
+    public ArrayList<String> getFileNames() {
+        return fileNames;
+    }
 }
