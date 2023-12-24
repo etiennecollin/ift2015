@@ -1,111 +1,173 @@
 /*
  * Copyright (c) 2023. Etienne Collin #2038029, Emiliano Aviles #20178127
  */
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Utils {
-    public static String getBigram(CustomHashMap<String, CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>>> wordMap,
-                                   ArrayList<String> processedFiles, ArrayList<String> fileNames, String word) {
-        CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>> fileMap = wordMap.get(word);
+    public static HashMap<String, Integer> getBigrams(WordMap wordMap, ArrayList<String> processedFiles, ArrayList<String> fileNames, String word) {
+        FileMap fileMap = wordMap.get(word);
+
+        // If the word is not in the wordMap, return null
         if (fileMap == null) {
             return null;
         }
 
-        Map<String, Integer> bigramCounts = new HashMap<>();
-        int totalOccurrences = 0;
+        // Store the possible bigrams and their occurrences
+        HashMap<String, Integer> bigrams = new HashMap<>();
 
         // Iterate over the file names containing the word
-        for (ArrayList<String> filesContainingWord : fileMap.keySet()) {
-            for (String fileCW : filesContainingWord) {
-                int fileIndex = fileNames.indexOf(fileCW);
-                if (fileIndex != -1) {
-                    String text = processedFiles.get(fileIndex);
-                    String[] words = text.split("\\s+");
+        for (Map.Entry<ArrayList<String>, ArrayList<ArrayList<Integer>>> fileMapEntry : fileMap.entrySet()) {
+            ArrayList<String> files = fileMapEntry.getKey();
+            ArrayList<ArrayList<Integer>> filesPositions = fileMapEntry.getValue();
+            for (String file : files) {
+                // Get the index of the file in the fileNames list
+                int fileIndex = fileNames.indexOf(file);
 
-                    // TODO: enlever forloop ici
+                // If the file is not in the fileNames list, skip it
+                if (fileIndex == -1) {
+                    continue;
+                }
 
-                    for (int i = 0; i < words.length - 1; i++) {
-                        if (word.equals(words[i])) {
-                            totalOccurrences++;
-                            String nextWord = words[i + 1];
-                            bigramCounts.put(nextWord, bigramCounts.getOrDefault(nextWord, 0) + 1);
-                        }
+                // Get the file content
+                String[] fileContent = processedFiles.get(fileIndex).split("\\s+");
+
+                // Get the position of the word in the file using the fileMap
+                ArrayList<Integer> positions = filesPositions.get(files.indexOf(file));
+                for (int position : positions) {
+                    // If the word is not the last word in the file, get the next word
+                    if (position < fileContent.length - 1) {
+                        String nextWord = fileContent[position + 1];
+                        bigrams.put(nextWord, bigrams.getOrDefault(nextWord, 0) + 1);
                     }
                 }
             }
         }
 
-        // Find the most probable bigram
+        // Return the bigrams
+        return bigrams;
+    }
 
-        //If the current bigram's probability (probability) is greater than the maximum probability found so far
-        // (maxProbability), the current bigram becomes the new most probable bigram.
+    public static String getMostProbableBigram(Map<String, Integer> bigrams) {
+        // If there are no bigrams, return null
+        if (bigrams == null) {
+            return null;
+        }
 
-        // If the current bigram's probability is equal to the maximum probability (probability == maxProbability),
-        // the method checks the lexicographic order of the current bigram's second word (entry.getKey())
-        // with the previously identified most probable word (mostProbableWord). The compareTo method returns a
-        // negative value if entry.getKey() is lexicographically smaller than mostProbableWord. In such a case,
-        // the current bigram's second word replaces the previous one as the most probable word.
+        // Get the total number of occurrences of the bigrams
+        int totalOccurrences = 0;
+        for (int occurrence : bigrams.values()) {
+            totalOccurrences += occurrence;
+        }
 
         String mostProbableWord = null;
         double maxProbability = 0.0;
-        for (Map.Entry<String, Integer> entry : bigramCounts.entrySet()) {
+        for (Map.Entry<String, Integer> entry : bigrams.entrySet()) {
             double probability = (double) entry.getValue() / totalOccurrences;
+
+            // Get the most probable word. If two words have the same probability, the word that comes first in
+            // lexicographic order is chosen.
             if (probability > maxProbability || (probability == maxProbability && (mostProbableWord == null || entry.getKey().compareTo(mostProbableWord) < 0))) {
                 maxProbability = probability;
                 mostProbableWord = entry.getKey();
             }
         }
+
         return mostProbableWord;
     }
 
     // get TF-IDF
-    public static String getTFIDF(CustomHashMap<String, CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>>> wordMap,
-                                  ArrayList<String> processedFiles, ArrayList<String> fileNames, String words) {
+    public static HashMap<String, Double> getTFIDFs(WordMap wordMap, ArrayList<String> processedFiles, ArrayList<String> fileNames, String words) {
 
-        Map<String, Double> documentScores = new HashMap<>();
+        HashMap<String, Double> scores = new HashMap<>();
         String[] queryWords = words.split("\\s+");
-        int totalDocuments = processedFiles.size();
 
         for (String word : queryWords) {
-            if (wordMap.containsKey(word)) {
-                CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>> fileMap = wordMap.get(word);
-                int documentFrequency = fileMap.keySet().size();
-                double idf = 1 + Math.log((1.0 + totalDocuments) / (1.0 + documentFrequency));
+            // If the word is not in the wordMap, skip it
+            if (!wordMap.containsKey(word)) {
+                continue;
+            }
 
-                for (Map.Entry<ArrayList<String>, ArrayList<ArrayList<Integer>>> fileEntry : fileMap.entrySet()) {
-                    ArrayList<String> fileNamesList = fileEntry.getKey();
-                    ArrayList<ArrayList<Integer>> positionsList = fileEntry.getValue();
+            // If the word is in the wordMap, get the TF-IDF score
+            FileMap fileMap = wordMap.get(word);
 
-                    for (int i = 0; i < fileNamesList.size(); i++) {
-                        String fileName = fileNamesList.get(i);
-                        int fileIndex = fileNames.indexOf(fileName);
-                        if (fileIndex != -1) {
-                            int wordCount = positionsList.get(i).size(); // Get word count from positions
-                            String text = processedFiles.get(fileIndex);
-                            int totalWords = text.split("\\s+").length;
-                            double tf = wordCount / (double) totalWords;
+            // Get the file frequency of the word
+            int fileFrequency = fileMap.keySet().size();
+            double idf = 1 + Math.log((1.0 + processedFiles.size()) / (1.0 + fileFrequency));
 
-                            double tfidf = tf * idf;
-                            documentScores.put(fileName, documentScores.getOrDefault(fileName, 0.0) + tfidf);
-                        }
+            // Get the TF-IDF score for each file
+            for (Map.Entry<ArrayList<String>, ArrayList<ArrayList<Integer>>> fileMapEntry : fileMap.entrySet()) {
+                ArrayList<String> fileNamesList = fileMapEntry.getKey();
+                ArrayList<ArrayList<Integer>> positionsList = fileMapEntry.getValue();
+
+                // Iterate over each file which contains the word
+                for (int i = 0; i < fileNamesList.size(); i++) {
+                    // Get the file name and its index in the fileNames list
+                    String fileName = fileNamesList.get(i);
+                    int fileIndex = fileNames.indexOf(fileName);
+
+                    // If the file is not in the fileNames list, skip it
+                    if (fileIndex == -1) {
+                        continue;
                     }
+
+                    // Get the number of occurrences of the word in the file and the total number of words in the file
+                    int occurrences = positionsList.get(i).size();
+                    int wordsInFile = processedFiles.get(fileIndex).split("\\s+").length;
+
+                    double tf = occurrences / (double) wordsInFile;
+
+                    double tfidf = tf * idf;
+                    scores.put(fileName, scores.getOrDefault(fileName, 0.0) + tfidf);
                 }
             }
         }
 
-        // Find the document with the highest score
-        String mostRelevantDocument = null;
+        // Return the TF-IDF scores
+        return scores;
+    }
+
+    public static String getMostRelevantFile(Map<String, Double> scores) {
+        // If there are no scores, return null
+        if (scores == null) {
+            return null;
+        }
+
+        String mostRelevantFile = null;
         double highestScore = 0.0;
-        for (Map.Entry<String, Double> entry : documentScores.entrySet()) {
-            if (entry.getValue() > highestScore || (entry.getValue() == highestScore && (mostRelevantDocument == null || entry.getKey().compareTo(mostRelevantDocument) < 0))) {
+
+        // Get the most relevant file. If two documents have the same TF-IDF, the document with the name
+        // that comes first in lexicographic order is chosen.
+        for (Map.Entry<String, Double> entry : scores.entrySet()) {
+            if (entry.getValue() > highestScore || (entry.getValue() == highestScore && (mostRelevantFile == null || entry.getKey().compareTo(mostRelevantFile) < 0))) {
                 highestScore = entry.getValue();
-                mostRelevantDocument = entry.getKey();
+                mostRelevantFile = entry.getKey();
             }
         }
-        return mostRelevantDocument;
+
+        return mostRelevantFile;
+    }
+
+    /**
+     * Returns a mapping of words to their positions in a string.
+     *
+     * @param fileContent The content of the file as a single string.
+     *
+     * @return A map where each key is a word, and the value is a list of positions of that word.
+     */
+    public static HashMap<String, ArrayList<Integer>> positionalize(String fileContent) {
+        HashMap<String, ArrayList<Integer>> wordPositions = new HashMap<>();
+        String[] words = fileContent.split("\\W+");
+
+        int position = 0;
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                wordPositions.putIfAbsent(word, new ArrayList<>());
+                wordPositions.get(word).add(position);
+            }
+            position++;
+        }
+        return wordPositions;
     }
 }
-

@@ -16,9 +16,9 @@ import java.util.Properties;
 
 public class Preprocessor {
     private final StanfordCoreNLP pipeline;
-    private final CustomHashMap<String, CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>>> wordMap = new CustomHashMap<>();
-    private final WordTokenizer tokenizer = new WordTokenizer();
     private final ArrayList<String> fileNames = new ArrayList<>(); // List of file names
+    private WordMap wordMap = new WordMap();
+    private ArrayList<String> processedFiles;
 
     public Preprocessor() {
         // Set up pipeline properties
@@ -34,12 +34,20 @@ public class Preprocessor {
         this.pipeline = new StanfordCoreNLP(properties);
     }
 
-    public ArrayList<String> processDirectory(String dir) {
+    public WordMap getWordMap() {
+        return wordMap;
+    }
+
+    public ArrayList<String> getProcessedFiles() {
+        return processedFiles;
+    }
+
+    public void processDirectory(String dir) {
         File folder = new File(dir);
         File[] files = folder.listFiles();
 
         if (files == null) {
-            return new ArrayList<>();
+            return;
         }
 
         ArrayList<String> processedFiles = new ArrayList<>(files.length);
@@ -47,7 +55,9 @@ public class Preprocessor {
             processedFiles.add(processFile(file));
             this.fileNames.add(file.getName()); // Add the file name to the fileNames list
         }
-        return processedFiles;
+
+        this.processedFiles = processedFiles;
+        createWordMap();
     }
 
     public String processFile(File file) {
@@ -77,37 +87,24 @@ public class Preprocessor {
         }
     }
 
-    private CoreDocument getCoreDocument(String line) {
-        String formattedLine = line.replaceAll("[^’'a-zA-Z0-9]", " ").replaceAll("\\s+", " ").trim();
-
-        // Create a document object
-        CoreDocument document = new CoreDocument(formattedLine);
-        // Annotate the document
-        this.pipeline.annotate(document);
-        return document;
-    }
-
-    public CustomHashMap<String, CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>>> getWordMap(){
-        return this.wordMap;
-    }
-
     // TODO: Explain how we add words to wordMap, into adding the stuff into fileMap afterwards
-    public CustomHashMap<String, CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>>> createWordMap(ArrayList<String> processedFiles) {
+    private void createWordMap() {
+        this.wordMap = new WordMap();
 
         // Iterate through each file
         for (int i = 0; i < processedFiles.size(); i++) {
-            String text = processedFiles.get(i);
+            String fileContent = processedFiles.get(i);
             String fileName = fileNames.get(i);
 
-            Map<String, ArrayList<Integer>> tokenized = tokenizer.tokenize(text);
-            for (Map.Entry<String, ArrayList<Integer>> entry : tokenized.entrySet()) {
+            Map<String, ArrayList<Integer>> positionalizedFileContent = Utils.positionalize(fileContent);
+            for (Map.Entry<String, ArrayList<Integer>> entry : positionalizedFileContent.entrySet()) {
                 String word = entry.getKey();
                 ArrayList<Integer> positions = entry.getValue();
 
                 if (!positions.isEmpty()) {
-                    CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>> fileMap = this.getWordMap().get(word);
+                    FileMap fileMap = this.wordMap.get(word);
                     if (fileMap == null) {
-                        fileMap = new CustomHashMap<>();
+                        fileMap = new FileMap();
 
                         ArrayList<String> fileNamesList = new ArrayList<>();
                         fileNamesList.add(fileName);
@@ -116,8 +113,7 @@ public class Preprocessor {
                         positionList.add(positions);
 
                         fileMap.put(fileNamesList, positionList);
-                        this.getWordMap().put(word, fileMap);
-
+                        this.wordMap.put(word, fileMap);
                     } else {
                         for (Map.Entry<ArrayList<String>, ArrayList<ArrayList<Integer>>> fileEntry : fileMap.entrySet()) {
                             ArrayList<String> existingFileNames = fileEntry.getKey();
@@ -133,7 +129,16 @@ public class Preprocessor {
                 }
             }
         }
-        return wordMap;
+    }
+
+    private CoreDocument getCoreDocument(String line) {
+        String formattedLine = line.replaceAll("[^’'a-zA-Z0-9]", " ").replaceAll("\\s+", " ").trim();
+
+        // Create a document object
+        CoreDocument document = new CoreDocument(formattedLine);
+        // Annotate the document
+        this.pipeline.annotate(document);
+        return document;
     }
 
     public ArrayList<String> getFileNames() {

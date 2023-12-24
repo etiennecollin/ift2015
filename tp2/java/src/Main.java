@@ -5,27 +5,21 @@ import java.util.ArrayList;
 
 public class Main {
     private static final String DATASET_DIR = "dataset_subset";
-    private static final String QUERY_FILE = "testQuery.txt";
+    private static final String QUERY_FILE = "query_test.txt";
     private static final String SOLUTION_FILE = "solution.txt";
 
     public static void main(String[] args) {
+        // Preprocess the dataset
         Preprocessor preprocessor = new Preprocessor();
-        // Format files in the dataset
-        ArrayList<String> processedFiles = preprocessor.processDirectory(DATASET_DIR);
+        preprocessor.processDirectory(DATASET_DIR);
+
+        // Get the processed files, the file names and the wordMap
+        ArrayList<String> processedFiles = preprocessor.getProcessedFiles();
         ArrayList<String> fileNames = preprocessor.getFileNames();
-
-        // Create wordMap and fileMap within wordMap
-        CustomHashMap<String, CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>>> wordMap = preprocessor.createWordMap(processedFiles);
-
-        // test wordMap
-        System.out.println(wordMap.get("to"));
-        for(String sentence : processedFiles){
-            System.out.println(sentence);
-        }
+        WordMap wordMap = preprocessor.getWordMap();
 
         // Read query file
-        QueryHandler queryHandler = new QueryHandler();
-        queryHandler.getQueries(QUERY_FILE);
-        queryHandler.processQueries(SOLUTION_FILE, wordMap, processedFiles, fileNames);
+        QueryHandler queryHandler = new QueryHandler(QUERY_FILE, SOLUTION_FILE);
+        queryHandler.processQueries(wordMap, processedFiles, fileNames);
     }
 }
