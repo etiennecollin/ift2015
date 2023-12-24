@@ -4,8 +4,8 @@
 import java.util.ArrayList;
 
 public class Main {
-    private static final String DATASET_DIR = "dataset_subset";
-    private static final String QUERY_FILE = "query_test.txt";
+    private static final String DATASET_DIR = "dataset";
+    private static final String QUERY_FILE = "query.txt";
     private static final String SOLUTION_FILE = "solution.txt";
 
     public static void main(String[] args) {

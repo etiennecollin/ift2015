@@ -2,6 +2,7 @@
  * Copyright (c) 2023. Etienne Collin #2038029, Emiliano Aviles #20178127
  */
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -169,5 +170,49 @@ public class Utils {
             position++;
         }
         return wordPositions;
+    }
+
+    // This method calculates the edit distance (Levenshtein distance) between two strings.
+    // Implementation from https://www.geeksforgeeks.org/edit-distance-dp-5/
+    public static int editDistance(String str1, String str2) {
+        // Get the lengths of the two input strings.
+        int m = str1.length();
+        int n = str2.length();
+
+        // Initialize an array to store the current row of edit distances.
+        int[] curr = new int[n + 1];
+
+        // Initialize the first row with values 0 to n.
+        for (int j = 0; j <= n; j++) {
+            curr[j] = j;
+        }
+
+        int previous;
+        for (int i = 1; i <= m; i++) {
+            // Store the value of the previous row's first column.
+            previous = curr[0];
+            curr[0] = i;
+
+            for (int j = 1; j <= n; j++) {
+                // Store the current value before updating it.
+                int temp = curr[j];
+
+                // Check if the characters at the current positions in str1 and str2 are the same.
+                if (str1.charAt(i - 1) == str2.charAt(j - 1)) {
+                    // If they are the same, no additional cost is incurred.
+                    curr[j] = previous;
+                } else {
+                    // If the characters are different, calculate the minimum of three operations:
+                    // 1. Deletion (previous value)
+                    // 2. Insertion (current row's previous value)
+                    // 3. Substitution (diagonal previous value)
+                    curr[j] = 1 + Math.min(Math.min(previous, curr[j - 1]), curr[j]);
+                }
+                // Update the previous value to the stored temporary value.
+                previous = temp;
+            }
+        }
+        // The value in the last cell of the current row represents the edit distance.
+        return curr[n];
     }
 }
