@@ -18,7 +18,10 @@ public class Main {
         CustomHashMap<String, CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>>> wordMap = preprocessor.createWordMap(processedFiles);
 
         // test wordMap
-        System.out.println(wordMap.get("and"));
+        System.out.println(wordMap.get("to"));
+        for(String sentence : processedFiles){
+            System.out.println(sentence);
+        }
 
         // Read query file
         QueryHandler queryHandler = new QueryHandler();

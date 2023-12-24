@@ -8,7 +8,7 @@ import java.util.Map;
 
 public class Utils {
     public static String getBigram(CustomHashMap<String, CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>>> wordMap,
-                                   ArrayList<String> processedFiles, ArrayList<String> fileNames, String word){
+                                   ArrayList<String> processedFiles, ArrayList<String> fileNames, String word) {
         CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>> fileMap = wordMap.get(word);
         if (fileMap == null) {
             return null;
@@ -59,8 +59,50 @@ public class Utils {
     }
 
     // get TF-IDF
-    public static double getTFIDF(int termFrequency, int documentFrequency, int totalDocuments) {
-        // TODO: implement
-        return 0;
+    public static String getTFIDF(CustomHashMap<String, CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>>> wordMap,
+                                  ArrayList<String> processedFiles, ArrayList<String> fileNames, String words) {
+
+        Map<String, Double> documentScores = new HashMap<>();
+        String[] queryWords = words.split("\\s+");
+        int totalDocuments = processedFiles.size();
+
+        for (String word : queryWords) {
+            if (wordMap.containsKey(word)) {
+                CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>> fileMap = wordMap.get(word);
+                int documentFrequency = fileMap.keySet().size();
+                double idf = 1 + Math.log((1.0 + totalDocuments) / (1.0 + documentFrequency));
+
+                for (Map.Entry<ArrayList<String>, ArrayList<ArrayList<Integer>>> fileEntry : fileMap.entrySet()) {
+                    ArrayList<String> fileNamesList = fileEntry.getKey();
+                    ArrayList<ArrayList<Integer>> positionsList = fileEntry.getValue();
+
+                    for (int i = 0; i < fileNamesList.size(); i++) {
+                        String fileName = fileNamesList.get(i);
+                        int fileIndex = fileNames.indexOf(fileName);
+                        if (fileIndex != -1) {
+                            int wordCount = positionsList.get(i).size(); // Get word count from positions
+                            String text = processedFiles.get(fileIndex);
+                            int totalWords = text.split("\\s+").length;
+                            double tf = wordCount / (double) totalWords;
+
+                            double tfidf = tf * idf;
+                            documentScores.put(fileName, documentScores.getOrDefault(fileName, 0.0) + tfidf);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Find the document with the highest score
+        String mostRelevantDocument = null;
+        double highestScore = 0.0;
+        for (Map.Entry<String, Double> entry : documentScores.entrySet()) {
+            if (entry.getValue() > highestScore || (entry.getValue() == highestScore && (mostRelevantDocument == null || entry.getKey().compareTo(mostRelevantDocument) < 0))) {
+                highestScore = entry.getValue();
+                mostRelevantDocument = entry.getKey();
+            }
+        }
+        return mostRelevantDocument;
     }
 }
+

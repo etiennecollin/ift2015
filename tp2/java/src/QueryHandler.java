@@ -16,10 +16,12 @@ public class QueryHandler {
                                ArrayList<String> processedFiles, ArrayList<String> fileNames) {
         Utils utils = new Utils();
 
-        try (PrintWriter printWriter = new PrintWriter(new BufferedWriter(new FileWriter(outputPath, true)))) {
+        try (PrintWriter printWriter = new PrintWriter(new BufferedWriter(new FileWriter(outputPath, false)))) {
             for (String query : queries) {
-                //TODO: changer pour un bon traitement de queries, mais getBigram fonctionne
+                //TODO: changer pour un bon traitement de queries, mais getBigram et getTFIDF fonctionnent
+
                 printWriter.println(Utils.getBigram(wordMap, processedFiles, fileNames, query));
+                printWriter.println(Utils.getTFIDF(wordMap,processedFiles,fileNames,query));
             }
         } catch (IOException e) {
             throw new RuntimeException("Invalid file output path");
