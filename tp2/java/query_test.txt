@@ -1,0 +1,5 @@
+search plonet
+the most probable bigram of cofee
+search coffe importe
+search graveety
+the most probable bigram of dwarf
