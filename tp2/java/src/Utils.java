@@ -2,12 +2,10 @@
  * Copyright (c) 2023. Etienne Collin #2038029, Emiliano Aviles #20178127
  */
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 public class Utils {
-    public static HashMap<String, Integer> getBigrams(WordMap wordMap, ArrayList<String> processedFiles, ArrayList<String> fileNames, String word) {
+    public static CustomHashMap<String, Integer> getBigrams(WordMap wordMap, ArrayList<String> processedFiles, ArrayList<String> fileNames, String word) {
         FileMap fileMap = wordMap.get(word);
 
         // If the word is not in the wordMap, return null
@@ -16,7 +14,7 @@ public class Utils {
         }
 
         // Store the possible bigrams and their occurrences
-        HashMap<String, Integer> bigrams = new HashMap<>();
+        CustomHashMap<String, Integer> bigrams = new CustomHashMap<>();
 
         // Iterate over the file names containing the word
         for (Map.Entry<ArrayList<String>, ArrayList<ArrayList<Integer>>> fileMapEntry : fileMap.entrySet()) {
@@ -50,7 +48,7 @@ public class Utils {
         return bigrams;
     }
 
-    public static String getMostProbableBigram(Map<String, Integer> bigrams) {
+    public static String getMostProbableBigram(CustomHashMap<String, Integer> bigrams) {
         // If there are no bigrams, return null
         if (bigrams == null) {
             return null;
@@ -79,9 +77,9 @@ public class Utils {
     }
 
     // get TF-IDF
-    public static HashMap<String, Double> getTFIDFs(WordMap wordMap, ArrayList<String> processedFiles, ArrayList<String> fileNames, String words) {
+    public static CustomHashMap<String, Double> getTFIDFs(WordMap wordMap, ArrayList<String> processedFiles, ArrayList<String> fileNames, String words) {
 
-        HashMap<String, Double> scores = new HashMap<>();
+        CustomHashMap<String, Double> scores = new CustomHashMap<>();
         String[] queryWords = words.split("\\s+");
 
         for (String word : queryWords) {
@@ -129,7 +127,7 @@ public class Utils {
         return scores;
     }
 
-    public static String getMostRelevantFile(Map<String, Double> scores) {
+    public static String getMostRelevantFile(CustomHashMap<String, Double> scores) {
         // If there are no scores, return null
         if (scores == null) {
             return null;
@@ -157,8 +155,8 @@ public class Utils {
      *
      * @return A map where each key is a word, and the value is a list of positions of that word.
      */
-    public static HashMap<String, ArrayList<Integer>> positionalize(String fileContent) {
-        HashMap<String, ArrayList<Integer>> wordPositions = new HashMap<>();
+    public static CustomHashMap<String, ArrayList<Integer>> positionalize(String fileContent) {
+        CustomHashMap<String, ArrayList<Integer>> wordPositions = new CustomHashMap<>();
         String[] words = fileContent.split("\\W+");
 
         int position = 0;

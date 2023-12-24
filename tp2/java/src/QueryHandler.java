@@ -3,7 +3,6 @@
  */
 import java.io.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class QueryHandler {
     private static final String BIGRAM_QUERY = "the most probable bigram of";
@@ -54,7 +53,7 @@ public class QueryHandler {
                     switch (queryType) {
                         case BIGRAM:
                             // Get the bigrams of the word
-                            HashMap<String, Integer> bigrams = Utils.getBigrams(wordMap, processedFiles, fileNames, word);
+                            CustomHashMap<String, Integer> bigrams = Utils.getBigrams(wordMap, processedFiles, fileNames, word);
                             // Get the most probable bigram
                             String mostProbableBigram = Utils.getMostProbableBigram(bigrams);
                             // Add the most probable bigram to the output file
@@ -62,7 +61,7 @@ public class QueryHandler {
                             break;
                         case SEARCH:
                             // Get the TFIDFs of the word
-                            HashMap<String, Double> tfidfs = Utils.getTFIDFs(wordMap, processedFiles, fileNames, word);
+                            CustomHashMap<String, Double> tfidfs = Utils.getTFIDFs(wordMap, processedFiles, fileNames, word);
                             // Get the most relevant file
                             String mostRelevantFile = Utils.getMostRelevantFile(tfidfs);
                             // Add the most relevant file to the output file

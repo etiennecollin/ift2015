@@ -96,7 +96,7 @@ public class Preprocessor {
             String fileContent = processedFiles.get(i);
             String fileName = fileNames.get(i);
 
-            Map<String, ArrayList<Integer>> positionalizedFileContent = Utils.positionalize(fileContent);
+            CustomHashMap<String, ArrayList<Integer>> positionalizedFileContent = Utils.positionalize(fileContent);
             for (Map.Entry<String, ArrayList<Integer>> entry : positionalizedFileContent.entrySet()) {
                 String word = entry.getKey();
                 ArrayList<Integer> positions = entry.getValue();
