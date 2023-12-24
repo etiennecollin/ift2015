@@ -50,7 +50,7 @@ public class QueryHandler {
      * @param processedFiles the list of processed files containing cleaned and lemmatized content
      * @param fileNames      the list of file names corresponding to the processed files
      */
-    public void processQueries(WordMap wordMap, ArrayList<String> processedFiles, ArrayList<String> fileNames) {
+    public void processQueries(WordMap wordMap, ArrayList<String[]> processedFiles, ArrayList<String> fileNames) {
         try (PrintWriter printWriter = new PrintWriter(new BufferedWriter(new FileWriter(outputPath, false)))) {
             // Iterate over the queries
             for (String query : queries) {
@@ -106,14 +106,12 @@ public class QueryHandler {
      *
      * @return the corrected word based on the closest match
      */
-    public String correctWord(String word, ArrayList<String> processedFiles) {
+    public String correctWord(String word, ArrayList<String[]> processedFiles) {
         String correctedWord = word;
         int minDistance = Integer.MAX_VALUE;
 
-        for (String processedFile : processedFiles) {
-            String[] processedFileWords = processedFile.split("\\W+");
-
-            for (String processedFileWord : processedFileWords) {
+        for (String[] processedFile : processedFiles) {
+            for (String processedFileWord : processedFile) {
                 int distance = Utils.editDistance(word, processedFileWord);
 
                 if (distance < minDistance) {

@@ -19,7 +19,7 @@ public class Utils {
      *
      * @return a CustomHashMap containing bigrams and their occurrences
      */
-    public static CustomHashMap<String, Integer> getBigrams(WordMap wordMap, ArrayList<String> processedFiles, ArrayList<String> fileNames, String word) {
+    public static CustomHashMap<String, Integer> getBigrams(WordMap wordMap, ArrayList<String[]> processedFiles, ArrayList<String> fileNames, String word) {
         // If the word is not in the wordMap, throw an exception
         if (!wordMap.containsKey(word)) {
             throw new RuntimeException("Word not found in dataset: " + word);
@@ -42,7 +42,7 @@ public class Utils {
                 }
 
                 // Get the file content
-                String[] fileContent = processedFiles.get(fileIndex).split("\\W+");
+                String[] fileContent = processedFiles.get(fileIndex);
 
                 // Get the position of the word in the file using the fileMap
                 ArrayList<Integer> positions = filesPositions.get(files.indexOf(file));
@@ -111,7 +111,7 @@ public class Utils {
      *
      * @return a CustomHashMap containing file names and their corresponding TF-IDF scores
      */
-    public static CustomHashMap<String, Double> getTFIDFs(WordMap wordMap, ArrayList<String> processedFiles, ArrayList<String> fileNames, String word) {
+    public static CustomHashMap<String, Double> getTFIDFs(WordMap wordMap, ArrayList<String[]> processedFiles, ArrayList<String> fileNames, String word) {
         // If the word is not in the wordMap, throw an exception
         if (!wordMap.containsKey(word)) {
             throw new RuntimeException("Word not found in dataset: " + word);
@@ -142,7 +142,7 @@ public class Utils {
 
                 // Get the number of occurrences of the word in the file and the total number of word in the file
                 int occurrences = positionsList.get(i).size();
-                int wordsInFile = processedFiles.get(fileIndex).split("\\W+").length;
+                int wordsInFile = processedFiles.get(fileIndex).length;
 
                 double tf = occurrences / (double) wordsInFile;
 
@@ -190,13 +190,11 @@ public class Utils {
      *
      * @return a CustomHashMap where each key is a word, and the value is a list of positions of that word
      */
-    public static CustomHashMap<String, ArrayList<Integer>> positionalize(String fileContent) {
+    public static CustomHashMap<String, ArrayList<Integer>> positionalize(String[] fileContent) {
         CustomHashMap<String, ArrayList<Integer>> wordPositions = new CustomHashMap<>();
-        String[] words = fileContent.split("\\W+");
-
         int position = 0;
         // Iterate over each word in the file content
-        for (String word : words) {
+        for (String word : fileContent) {
             if (!word.isEmpty()) {
                 wordPositions.putIfAbsent(word, new ArrayList<>());
                 wordPositions.get(word).add(position);

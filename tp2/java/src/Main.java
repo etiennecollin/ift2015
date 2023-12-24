@@ -34,7 +34,7 @@ public class Main {
         preprocessor.processDirectory(DATASET_DIR);
 
         // Get the processed files, the file names and the wordMap
-        ArrayList<String> processedFiles = preprocessor.getProcessedFiles();
+        ArrayList<String[]> processedFiles = preprocessor.getProcessedFiles();
         ArrayList<String> fileNames = preprocessor.getFileNames();
         WordMap wordMap = preprocessor.getWordMap();
 

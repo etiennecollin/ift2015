@@ -35,7 +35,7 @@ public class Preprocessor {
     /**
      * List of processed files containing lemmatized and cleaned content.
      */
-    private ArrayList<String> processedFiles;
+    private ArrayList<String[]> processedFiles;
 
     /**
      * Constructs a Preprocessor with the necessary setup for natural language processing.
@@ -68,9 +68,9 @@ public class Preprocessor {
             return;
         }
 
-        ArrayList<String> processedFiles = new ArrayList<>(files.length);
+        ArrayList<String[]> processedFiles = new ArrayList<>(files.length);
         for (File file : files) {
-            processedFiles.add(processFile(file));
+            processedFiles.add(processFile(file).split("\\W+"));
             this.fileNames.add(file.getName()); // Add the file name to the fileNames list
         }
 
@@ -122,7 +122,7 @@ public class Preprocessor {
 
         // Iterate through each file
         for (int i = 0; i < processedFiles.size(); i++) {
-            String fileContent = processedFiles.get(i);
+            String[] fileContent = processedFiles.get(i);
             String fileName = fileNames.get(i);
 
             // Get the list of positions for every word of the processed file
@@ -203,7 +203,7 @@ public class Preprocessor {
      *
      * @return the list of processed files containing cleaned and lemmatized content
      */
-    public ArrayList<String> getProcessedFiles() {
+    public ArrayList<String[]> getProcessedFiles() {
         return processedFiles;
     }
 
