@@ -1,7 +1,6 @@
 /*
  * Copyright (c) 2023. Etienne Collin #2038029, Emiliano Aviles #20178127
  */
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class Main {

@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -93,15 +92,6 @@ public class Preprocessor {
     }
 
     // TODO: Explain how we add words to wordMap, into adding the stuff into fileMap afterwards
-
-    public void addWord(String word, ArrayList<String> fileNames, ArrayList<ArrayList<Integer>> positions) {
-        if (!wordMap.containsKey(word)) {
-            wordMap.put(word, new CustomHashMap<>());
-        }
-
-        CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>> fileMap = wordMap.get(word);
-        fileMap.put(fileNames, positions);
-    }
     public CustomHashMap<String, CustomHashMap<ArrayList<String>, ArrayList<ArrayList<Integer>>>> createWordMap(ArrayList<String> processedFiles) {
 
         // Iterate through each file
