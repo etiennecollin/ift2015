@@ -34,14 +34,6 @@ public class Preprocessor {
         this.pipeline = new StanfordCoreNLP(properties);
     }
 
-    public WordMap getWordMap() {
-        return wordMap;
-    }
-
-    public ArrayList<String> getProcessedFiles() {
-        return processedFiles;
-    }
-
     public void processDirectory(String dir) {
         File folder = new File(dir);
         File[] files = folder.listFiles();
@@ -87,7 +79,28 @@ public class Preprocessor {
         }
     }
 
-    // TODO: Explain how we add words to wordMap, into adding the stuff into fileMap afterwards
+    private CoreDocument getCoreDocument(String line) {
+        String formattedLine = line.replaceAll("[^’'a-zA-Z0-9]", " ").replaceAll("\\s+", " ").trim();
+
+        // Create a document object
+        CoreDocument document = new CoreDocument(formattedLine);
+        // Annotate the document
+        this.pipeline.annotate(document);
+        return document;
+    }
+
+    public WordMap getWordMap() {
+        return wordMap;
+    }
+
+    public ArrayList<String> getProcessedFiles() {
+        return processedFiles;
+    }
+
+    public ArrayList<String> getFileNames() {
+        return fileNames;
+    }
+
     private void createWordMap() {
         this.wordMap = new WordMap();
 
@@ -96,10 +109,16 @@ public class Preprocessor {
             String fileContent = processedFiles.get(i);
             String fileName = fileNames.get(i);
 
+            // We use the Utils.positionalize method in order to get the list of positions for every word contained
+            // in a certain text file. We will be adding the positions that are interesting to us to FileMap.
+
             CustomHashMap<String, ArrayList<Integer>> positionalizedFileContent = Utils.positionalize(fileContent);
+
             for (Map.Entry<String, ArrayList<Integer>> entry : positionalizedFileContent.entrySet()) {
                 String word = entry.getKey();
                 ArrayList<Integer> positions = entry.getValue();
+
+                // Create WordMap and FileMap if the word we encountered in a specific text file hasn't been stored yet
 
                 if (!positions.isEmpty()) {
                     FileMap fileMap = this.wordMap.get(word);
@@ -115,6 +134,12 @@ public class Preprocessor {
                         fileMap.put(fileNamesList, positionList);
                         this.wordMap.put(word, fileMap);
                     } else {
+
+                        // Update WordMap and FileMap if the word encountered in a specific text file
+                        // has already been stored from another text file. Update the key and value from the instance
+                        // of fileMap associated to the word in question, corresponding to the list of texts containing
+                        // the specific word, and the list of positions respectively.
+
                         for (Map.Entry<ArrayList<String>, ArrayList<ArrayList<Integer>>> fileEntry : fileMap.entrySet()) {
                             ArrayList<String> existingFileNames = fileEntry.getKey();
                             ArrayList<ArrayList<Integer>> existingPositions = fileEntry.getValue();
@@ -129,19 +154,5 @@ public class Preprocessor {
                 }
             }
         }
-    }
-
-    private CoreDocument getCoreDocument(String line) {
-        String formattedLine = line.replaceAll("[^’'a-zA-Z0-9]", " ").replaceAll("\\s+", " ").trim();
-
-        // Create a document object
-        CoreDocument document = new CoreDocument(formattedLine);
-        // Annotate the document
-        this.pipeline.annotate(document);
-        return document;
-    }
-
-    public ArrayList<String> getFileNames() {
-        return fileNames;
     }
 }

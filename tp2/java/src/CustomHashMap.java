@@ -7,6 +7,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+// The CustomHashMap class extends from AbstractMap (implements Map), making sure the modified
+// HashMap resizes and rehashes if the load factor is > 0.75. We use java.util.HashMap as a base
+// to construct the new one.
+
 public class CustomHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
     private final int DEFAULT_INITIAL_CAPACITY = 32;
     private final float CUSTOM_LOAD_FACTOR = 0.75f;
@@ -34,6 +38,10 @@ public class CustomHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> 
         resizeIfNeeded();
         return value;
     }
+
+    // The resizeIfNeeded method makes sure the CustomHashMap is still able to inherit all the base
+    // java.util.HashMap attributes and methods (besides the one's that are overwritten/overridden) while also
+    // making sure the custom load factor is respected.
 
     private void resizeIfNeeded() {
         int currentSize = hashMap.size();
