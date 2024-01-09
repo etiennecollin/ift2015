@@ -69,28 +69,35 @@ public class QueryHandler {
                 // Split the query words
                 String[] queryWords = query.split("\\W+");
 
-                // Process each query word
-                for (String word : queryWords) {
-                    // Use the closest word in the processed files using the edit distance
-                    word = correctWord(word, processedFiles);
-                    switch (queryType) {
-                        case BIGRAM:
-                            // Get the bigrams of the word
-                            CustomHashMap<String, Integer> bigrams = Utils.getBigrams(wordMap, processedFiles, fileNames, word);
-                            // Get the most probable bigram
-                            String mostProbableBigram = Utils.getMostProbableBigram(bigrams);
-                            // Add the most probable bigram to the output file
-                            printWriter.println(word + " " + mostProbableBigram);
-                            break;
-                        case SEARCH:
-                            // Get the TFIDFs of the word
-                            CustomHashMap<String, Double> tfidfs = Utils.getTFIDFs(wordMap, processedFiles, fileNames, word);
-                            // Get the most relevant file
-                            String mostRelevantFile = Utils.getMostRelevantFile(tfidfs);
-                            // Add the most relevant file to the output file
-                            printWriter.println(mostRelevantFile);
-                            break;
-                    }
+                switch (queryType) {
+                    case BIGRAM:
+                        if (queryWords.length != 1) {
+                            throw new RuntimeException("Invalid query format: " + query);
+                        }
+                        // Use the closest word in the processed files using the edit distance
+                        String word = correctWord(queryWords[0], processedFiles);
+                        // Get the bigrams of the word
+                        CustomHashMap<String, Integer> bigrams = Utils.getBigrams(wordMap, processedFiles, fileNames, word);
+                        // Get the most probable bigram
+                        String mostProbableBigram = Utils.getMostProbableBigram(bigrams);
+                        // Add the most probable bigram to the output file
+                        printWriter.println(word + " " + mostProbableBigram);
+                        break;
+                    case SEARCH:
+                        CustomHashMap<String, Double> tfidfsMerged = new CustomHashMap<>();
+                        // Process each query word
+                        for (String searchWord : queryWords) {
+                            searchWord = correctWord(searchWord, processedFiles);
+                            // Get the TFIDFs of the searchWord
+                            CustomHashMap<String, Double> tfidfs = Utils.getTFIDFs(wordMap, processedFiles, fileNames, searchWord);
+                            // Merge to the TFIDFs of the query words
+                            tfidfs.forEach((k, v) -> tfidfsMerged.merge(k, v, (v1, v2) -> v1 + v2));
+                        }
+                        // Get the most relevant file
+                        String mostRelevantFile = Utils.getMostRelevantFile(tfidfsMerged);
+                        // Add the most relevant file to the output file
+                        printWriter.println(mostRelevantFile);
+                        break;
                 }
             }
         } catch (IOException e) {
