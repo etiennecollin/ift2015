@@ -2,6 +2,8 @@
 
 _By Etienne Collin & Emiliano Aviles_
 
+A basic NLP document processor that uses bigrams to predict text.
+
 ## How to setup
 
 Please note that the [stanford-corenlp-4.5.1 library](https://downloads.cs.stanford.edu/nlp/software/stanford-corenlp-4.5.1.zip) should be placed in the
